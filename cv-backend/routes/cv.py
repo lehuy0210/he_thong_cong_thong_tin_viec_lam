@@ -2,7 +2,6 @@ from flask import Blueprint, request, jsonify
 from db import get_db_connection
 from mysql.connector import Error
 
-# Tạo blueprint cho các API quản lý CV
 cv_bp = Blueprint('cv', __name__)
 
 @cv_bp.route('/cv', methods=['POST'])

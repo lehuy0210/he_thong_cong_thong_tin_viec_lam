@@ -132,18 +132,20 @@ DROP TABLE IF EXISTS `ho_so_ung_tuyen`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ho_so_ung_tuyen` (
   `ma_ho_so` int NOT NULL AUTO_INCREMENT,
-  `trang_thai` enum('Chờ duyệt','Đã duyệt','Từ chối') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `ngay_nop` datetime DEFAULT NULL,
   `ma_ung_vien` int NOT NULL,
   `tin_id` int NOT NULL,
   `ma_cv` int NOT NULL,
+  `ma_trang_thai` int NOT NULL,
   PRIMARY KEY (`ma_ho_so`),
   KEY `ma_cv` (`ma_cv`),
-  KEY `tin_id` (`tin_id`),
+  KEY `ma_trang_thai` (`ma_trang_thai`),
   KEY `ma_ung_vien` (`ma_ung_vien`),
+  KEY `tin_id` (`tin_id`),
   CONSTRAINT `ho_so_ung_tuyen_ibfk_1` FOREIGN KEY (`ma_cv`) REFERENCES `cv` (`ma_cv`) ON DELETE CASCADE,
-  CONSTRAINT `ho_so_ung_tuyen_ibfk_2` FOREIGN KEY (`tin_id`) REFERENCES `tin_tuyen_dung` (`tin_id`) ON DELETE CASCADE,
-  CONSTRAINT `ho_so_ung_tuyen_ibfk_3` FOREIGN KEY (`ma_ung_vien`) REFERENCES `ung_vien` (`ma_ung_vien`) ON DELETE CASCADE
+  CONSTRAINT `ho_so_ung_tuyen_ibfk_2` FOREIGN KEY (`ma_trang_thai`) REFERENCES `trang_thai` (`ma_trang_thai`) ON DELETE RESTRICT,
+  CONSTRAINT `ho_so_ung_tuyen_ibfk_3` FOREIGN KEY (`ma_ung_vien`) REFERENCES `ung_vien` (`ma_ung_vien`) ON DELETE CASCADE,
+  CONSTRAINT `ho_so_ung_tuyen_ibfk_4` FOREIGN KEY (`tin_id`) REFERENCES `tin_tuyen_dung` (`tin_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -191,16 +193,11 @@ CREATE TABLE `nguoi_dung` (
   `id` int NOT NULL AUTO_INCREMENT,
   `username` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `vai_tro` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `ho_ten` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `ngay_sinh` date DEFAULT NULL,
-  `email` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `gioi_tinh` enum('Nam','Nữ','Khác') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `so_dien_thoai` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `dia_chi` text COLLATE utf8mb4_unicode_ci,
+  `ma_vai_tro` int NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `email` (`email`),
-  UNIQUE KEY `username` (`username`)
+  UNIQUE KEY `username` (`username`),
+  KEY `ma_vai_tro` (`ma_vai_tro`),
+  CONSTRAINT `nguoi_dung_ibfk_1` FOREIGN KEY (`ma_vai_tro`) REFERENCES `vai_tro` (`ma_vai_tro`) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -222,7 +219,11 @@ DROP TABLE IF EXISTS `nha_tuyen_dung`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nha_tuyen_dung` (
   `ma_nha_tuyen_dung` int NOT NULL,
+  `ten_nha_tuyen_dung` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `so_dien_thoai` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`ma_nha_tuyen_dung`),
+  UNIQUE KEY `email` (`email`),
   CONSTRAINT `nha_tuyen_dung_ibfk_1` FOREIGN KEY (`ma_nha_tuyen_dung`) REFERENCES `nguoi_dung` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -245,7 +246,10 @@ DROP TABLE IF EXISTS `quan_tri`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `quan_tri` (
   `ma_quan_tri` int NOT NULL,
+  `ho_ten` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`ma_quan_tri`),
+  UNIQUE KEY `email` (`email`),
   CONSTRAINT `quan_tri_ibfk_1` FOREIGN KEY (`ma_quan_tri`) REFERENCES `nguoi_dung` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -270,14 +274,16 @@ CREATE TABLE `tin_tuyen_dung` (
   `tin_id` int NOT NULL AUTO_INCREMENT,
   `tieu_de` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `mo_ta` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `trang_thai` enum('Đang mở','Đã đóng') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `han_nop` date NOT NULL,
   `luong` int DEFAULT NULL,
   `quyen_loi` text COLLATE utf8mb4_unicode_ci,
   `ma_nha_tuyen_dung` int NOT NULL,
+  `ma_trang_thai` int NOT NULL,
   PRIMARY KEY (`tin_id`),
   KEY `ma_nha_tuyen_dung` (`ma_nha_tuyen_dung`),
-  CONSTRAINT `tin_tuyen_dung_ibfk_1` FOREIGN KEY (`ma_nha_tuyen_dung`) REFERENCES `nha_tuyen_dung` (`ma_nha_tuyen_dung`) ON DELETE CASCADE
+  KEY `ma_trang_thai` (`ma_trang_thai`),
+  CONSTRAINT `tin_tuyen_dung_ibfk_1` FOREIGN KEY (`ma_nha_tuyen_dung`) REFERENCES `nha_tuyen_dung` (`ma_nha_tuyen_dung`) ON DELETE CASCADE,
+  CONSTRAINT `tin_tuyen_dung_ibfk_2` FOREIGN KEY (`ma_trang_thai`) REFERENCES `trang_thai` (`ma_trang_thai`) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -317,6 +323,30 @@ LOCK TABLES `tin_tuyen_dung_ky_nang` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `trang_thai`
+--
+
+DROP TABLE IF EXISTS `trang_thai`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `trang_thai` (
+  `ma_trang_thai` int NOT NULL AUTO_INCREMENT,
+  `ten_trang_thai` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  PRIMARY KEY (`ma_trang_thai`),
+  UNIQUE KEY `ten_trang_thai` (`ten_trang_thai`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `trang_thai`
+--
+
+LOCK TABLES `trang_thai` WRITE;
+/*!40000 ALTER TABLE `trang_thai` DISABLE KEYS */;
+/*!40000 ALTER TABLE `trang_thai` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `ung_vien`
 --
 
@@ -325,7 +355,14 @@ DROP TABLE IF EXISTS `ung_vien`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ung_vien` (
   `ma_ung_vien` int NOT NULL,
+  `ho_ten` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `gioi_tinh` enum('Nam','Nữ') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `so_dien_thoai` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ngay_sinh` date DEFAULT NULL,
+  `dia_chi` text COLLATE utf8mb4_unicode_ci,
   PRIMARY KEY (`ma_ung_vien`),
+  UNIQUE KEY `email` (`email`),
   CONSTRAINT `ung_vien_ibfk_1` FOREIGN KEY (`ma_ung_vien`) REFERENCES `nguoi_dung` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -338,6 +375,30 @@ LOCK TABLES `ung_vien` WRITE;
 /*!40000 ALTER TABLE `ung_vien` DISABLE KEYS */;
 /*!40000 ALTER TABLE `ung_vien` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `vai_tro`
+--
+
+DROP TABLE IF EXISTS `vai_tro`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `vai_tro` (
+  `ma_vai_tro` int NOT NULL AUTO_INCREMENT,
+  `ten_vai_tro` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  PRIMARY KEY (`ma_vai_tro`),
+  UNIQUE KEY `ten_vai_tro` (`ten_vai_tro`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `vai_tro`
+--
+
+LOCK TABLES `vai_tro` WRITE;
+/*!40000 ALTER TABLE `vai_tro` DISABLE KEYS */;
+/*!40000 ALTER TABLE `vai_tro` ENABLE KEYS */;
+UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -348,4 +409,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-08-08 18:22:32
+-- Dump completed on 2026-08-08 20:07:57

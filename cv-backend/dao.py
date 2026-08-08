@@ -1,4 +1,3 @@
-# dao.py
 from db import get_db_connection
 from mysql.connector import Error
 
@@ -9,7 +8,7 @@ def get_ung_vien_by_id(ma_ung_vien):
         raise Exception("Lỗi kết nối cơ sở dữ liệu!")
     try:
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM ungvien WHERE Id = %s", (ma_ung_vien,))
+        cursor.execute("SELECT * FROM ung_vien WHERE ma_ung_vien = %s", (ma_ung_vien,))
         return cursor.fetchone()
     finally:
         if 'cursor' in locals() and cursor:
@@ -24,7 +23,7 @@ def get_cv_by_id(ma_cv):
         raise Exception("Lỗi kết nối cơ sở dữ liệu!")
     try:
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM cv WHERE MaCV = %s", (ma_cv,))
+        cursor.execute("SELECT * FROM cv WHERE ma_cv = %s", (ma_cv,))
         return cursor.fetchone()
     finally:
         if 'cursor' in locals() and cursor:
@@ -39,7 +38,6 @@ def create_cv_db(ten_cv, ten_file, hoc_van, kinh_nghiem_lam_viec, ma_ung_vien):
         raise Exception("Lỗi kết nối cơ sở dữ liệu!")
     try:
         cursor = conn.cursor(dictionary=True)
-        # Bổ sung đủ các cột: ten_cv, ten_file, hoc_van, kinh_nghiem_lam_viec, ma_ung_vien
         insert_query = """
             INSERT INTO cv (ten_cv, ten_file, hoc_van, kinh_nghiem_lam_viec, ma_ung_vien) 
             VALUES (%s, %s, %s, %s, %s)
@@ -53,20 +51,34 @@ def create_cv_db(ten_cv, ten_file, hoc_van, kinh_nghiem_lam_viec, ma_ung_vien):
         if conn and conn.is_connected():
             conn.close()
 
-def update_cv_db(ma_cv, ten_cv, ten_file, hoc_van, kinh_nghiem_lam_viec):
-    """Cập nhật toàn bộ thông tin CV theo ERD"""
+def update_cv_db(ma_cv, ten_cv=None, ten_file=None, hoc_van=None, kinh_nghiem_lam_viec=None):
+    """Cập nhật động thông tin CV (Partial Update)"""
     conn = get_db_connection()
     if conn is None:
         raise Exception("Lỗi kết nối cơ sở dữ liệu!")
     try:
-        cursor = conn.cursor(dictionary=True)
-        # Cập nhật tất cả các trường
-        update_query = """
-            UPDATE cv 
-            SET ten_cv = %s, ten_file = %s, hoc_van = %s, kinh_nghiem_lam_viec = %s 
-            WHERE ma_cv = %s
-        """
-        cursor.execute(update_query, (ten_cv, ten_file, hoc_van, kinh_nghiem_lam_viec, ma_cv))
+        cursor = conn.cursor()
+        fields = []
+        values = []
+        
+        mapping = {
+            'ten_cv': ten_cv,
+            'ten_file': ten_file,
+            'hoc_van': hoc_van,
+            'kinh_nghiem_lam_viec': kinh_nghiem_lam_viec
+        }
+
+        for column, val in mapping.items():
+            if val is not None:
+                fields.append(f"{column} = %s")
+                values.append(val)
+
+        if not fields:
+            return False
+
+        values.append(ma_cv)
+        update_query = f"UPDATE cv SET {', '.join(fields)} WHERE ma_cv = %s"
+        cursor.execute(update_query, tuple(values))
         conn.commit()
         return True
     finally:
@@ -82,7 +94,7 @@ def delete_cv_db(ma_cv):
         raise Exception("Lỗi kết nối cơ sở dữ liệu!")
     try:
         cursor = conn.cursor(dictionary=True)
-        delete_query = "DELETE FROM cv WHERE MaCV = %s"
+        delete_query = "DELETE FROM cv WHERE ma_cv = %s"
         cursor.execute(delete_query, (ma_cv,))
         conn.commit()
         return True
@@ -92,7 +104,7 @@ def delete_cv_db(ma_cv):
         if conn and conn.is_connected():
             conn.close()
 
-def create_job_db(tieu_de, mo_ta, trang_thai, han_nop, luong, quyen_loi, ma_nha_tuyen_dung):
+def create_job_db(tieu_de, mo_ta, ma_trang_thai, han_nop, luong, quyen_loi, ma_nha_tuyen_dung):
     """Tạo tin tuyển dụng mới với đầy đủ các trường theo ERD"""
     conn = get_db_connection()
     if conn is None:
@@ -100,10 +112,10 @@ def create_job_db(tieu_de, mo_ta, trang_thai, han_nop, luong, quyen_loi, ma_nha_
     try:
         cursor = conn.cursor(dictionary=True)
         insert_query = """
-            INSERT INTO tin_tuyen_dung (tieu_de, mo_ta, trang_thai, han_nop, luong, quyen_loi, ma_nha_tuyen_dung) 
+            INSERT INTO tin_tuyen_dung (tieu_de, mo_ta, ma_trang_thai, han_nop, luong, quyen_loi, ma_nha_tuyen_dung) 
             VALUES (%s, %s, %s, %s, %s, %s, %s)
         """
-        cursor.execute(insert_query, (tieu_de, mo_ta, trang_thai, han_nop, luong, quyen_loi, ma_nha_tuyen_dung))
+        cursor.execute(insert_query, (tieu_de, mo_ta, ma_trang_thai, han_nop, luong, quyen_loi, ma_nha_tuyen_dung))
         conn.commit()
         return cursor.lastrowid
     finally:
@@ -142,7 +154,7 @@ def get_all_jobs_db():
         if conn and conn.is_connected():
             conn.close()
 
-def update_job_db(tin_id, tieu_de=None, mo_ta=None, trang_thai=None, han_nop=None, luong=None, quyen_loi=None):
+def update_job_db(tin_id, tieu_de=None, mo_ta=None, ma_trang_thai=None, han_nop=None, luong=None, quyen_loi=None):
     """Cập nhật tin tuyển dụng động cho tất cả các trường có trong ERD"""
     conn = get_db_connection()
     if conn is None:
@@ -155,7 +167,7 @@ def update_job_db(tin_id, tieu_de=None, mo_ta=None, trang_thai=None, han_nop=Non
         mapping = {
             'tieu_de': tieu_de,
             'mo_ta': mo_ta,
-            'trang_thai': trang_thai,
+            'ma_trang_thai': ma_trang_thai, 
             'han_nop': han_nop,
             'luong': luong,
             'quyen_loi': quyen_loi
@@ -190,6 +202,22 @@ def delete_job_db(tin_id):
         cursor.execute("DELETE FROM tin_tuyen_dung WHERE tin_id = %s", (tin_id,))
         conn.commit()
         return cursor.rowcount > 0 
+    finally:
+        if 'cursor' in locals() and cursor:
+            cursor.close()
+        if conn and conn.is_connected():
+            conn.close()
+
+
+def get_nha_tuyen_dung_by_id(ma_nha_tuyen_dung):
+    """Lấy thông tin nhà tuyển dụng theo ID"""
+    conn = get_db_connection()
+    if conn is None:
+        raise Exception("Lỗi kết nối cơ sở dữ liệu!")
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM nha_tuyen_dung WHERE ma_nha_tuyen_dung = %s", (ma_nha_tuyen_dung,))
+        return cursor.fetchone()
     finally:
         if 'cursor' in locals() and cursor:
             cursor.close()

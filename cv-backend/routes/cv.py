@@ -9,32 +9,34 @@ def create_cv():
     if not data:
         return jsonify({'message': 'Vui lòng cung cấp dữ liệu JSON!'}), 400
 
-    ten_cv = data.get('TenCV')
-    ten_file = data.get('TenFile')
-    hoc_van = data.get('HocVan')
-    kinh_nghiem_lam_viec = data.get('KinhNghiemLamViec')
-    ma_ung_vien = data.get('MaUngVien')
+    ten_cv = data.get('ten_cv')
+    ten_file = data.get('ten_file')
+    hoc_van = data.get('hoc_van')
+    kinh_nghiem_lam_viec = data.get('kinh_nghiem_lam_viec')
+    ma_ung_vien = data.get('ma_ung_vien')
 
+    # Kiểm tra các trường bắt buộc
     if not ten_file or not ma_ung_vien:
-        return jsonify({'message': 'TenFile và MaUngVien là bắt buộc!'}), 400
+        return jsonify({'message': 'ten_file và ma_ung_vien là bắt buộc!'}), 400
 
     try:
+        # Ràng buộc khóa ngoại: Kiểm tra ứng viên có tồn tại không
         ung_vien = get_ung_vien_by_id(ma_ung_vien)
         if not ung_vien:
             return jsonify({'message': 'Mã ứng viên không tồn tại!'}), 404
 
-        # Truyền đầy đủ các tham số tương ứng với cơ sở dữ liệu
+        # Lưu vào CSDL
         ma_cv = create_cv_db(ten_cv, ten_file, hoc_van, kinh_nghiem_lam_viec, ma_ung_vien)
 
         return jsonify({
             'message': 'Tạo CV thành công!',
             'cv': {
-                'MaCV': ma_cv,
-                'TenCV': ten_cv,
-                'TenFile': ten_file,
-                'HocVan': hoc_van,
-                'KinhNghiemLamViec': kinh_nghiem_lam_viec,
-                'MaUngVien': ma_ung_vien
+                'ma_cv': ma_cv,
+                'ten_cv': ten_cv,
+                'ten_file': ten_file,
+                'hoc_van': hoc_van,
+                'kinh_nghiem_lam_viec': kinh_nghiem_lam_viec,
+                'ma_ung_vien': ma_ung_vien
             }
         }), 201
 
@@ -48,32 +50,28 @@ def update_cv(ma_cv):
     if not data:
         return jsonify({'message': 'Vui lòng cung cấp dữ liệu JSON!'}), 400
 
-    ten_cv = data.get('TenCV')
-    ten_file = data.get('TenFile')
-    hoc_van = data.get('HocVan')
-    kinh_nghiem_lam_viec = data.get('KinhNghiemLamViec')
+    ten_cv = data.get('ten_cv')
+    ten_file = data.get('ten_file')
+    hoc_van = data.get('hoc_van')
+    kinh_nghiem_lam_viec = data.get('kinh_nghiem_lam_viec')
 
-    if not ten_file:
-        return jsonify({'message': 'TenFile là bắt buộc để cập nhật!'}), 400
+    # Yêu cầu ít nhất 1 trường để cập nhật (thay vì bắt buộc ten_file)
+    if all(v is None for v in [ten_cv, ten_file, hoc_van, kinh_nghiem_lam_viec]):
+        return jsonify({'message': 'Phải truyền ít nhất một trường để cập nhật'}), 400
 
     try:
         cv = get_cv_by_id(ma_cv)
         if not cv:
             return jsonify({'message': 'CV không tồn tại!'}), 404
 
-        # Cập nhật đầy đủ các trường dữ liệu theo ERD
         update_cv_db(ma_cv, ten_cv, ten_file, hoc_van, kinh_nghiem_lam_viec)
+
+        # Lấy lại data mới nhất từ DB để trả về cho client
+        cv_updated = get_cv_by_id(ma_cv)
 
         return jsonify({
             'message': 'Cập nhật CV thành công!',
-            'cv': {
-                'MaCV': ma_cv,
-                'TenCV': ten_cv,
-                'TenFile': ten_file,
-                'HocVan': hoc_van,
-                'KinhNghiemLamViec': kinh_nghiem_lam_viec,
-                'MaUngVien': cv['MaUngVien']
-            }
+            'cv': cv_updated
         }), 200
 
     except Exception as e:
@@ -86,12 +84,11 @@ def delete_cv(ma_cv):
         cv = get_cv_by_id(ma_cv)
         if not cv:
             return jsonify({'message': 'CV không tồn tại!'}), 404
-
         delete_cv_db(ma_cv)
 
         return jsonify({
             'message': 'Xóa CV thành công!',
-            'MaCV': ma_cv
+            'ma_cv': ma_cv
         }), 200
 
     except Exception as e:

@@ -32,15 +32,19 @@ def get_cv_by_id(ma_cv):
         if conn and conn.is_connected():
             conn.close()
 
-def create_cv_db(ten_file, ma_ung_vien):
-    """Tạo CV mới và trả về ID của CV vừa tạo"""
+def create_cv_db(ten_cv, ten_file, hoc_van, kinh_nghiem_lam_viec, ma_ung_vien):
+    """Tạo CV mới với đầy đủ các trường theo ERD"""
     conn = get_db_connection()
     if conn is None:
         raise Exception("Lỗi kết nối cơ sở dữ liệu!")
     try:
         cursor = conn.cursor(dictionary=True)
-        insert_query = "INSERT INTO cv (TenFile, MaUngVien) VALUES (%s, %s)"
-        cursor.execute(insert_query, (ten_file, ma_ung_vien))
+        # Bổ sung đủ các cột: ten_cv, ten_file, hoc_van, kinh_nghiem_lam_viec, ma_ung_vien
+        insert_query = """
+            INSERT INTO cv (ten_cv, ten_file, hoc_van, kinh_nghiem_lam_viec, ma_ung_vien) 
+            VALUES (%s, %s, %s, %s, %s)
+        """
+        cursor.execute(insert_query, (ten_cv, ten_file, hoc_van, kinh_nghiem_lam_viec, ma_ung_vien))
         conn.commit()
         return cursor.lastrowid
     finally:
@@ -49,15 +53,20 @@ def create_cv_db(ten_file, ma_ung_vien):
         if conn and conn.is_connected():
             conn.close()
 
-def update_cv_db(ma_cv, ten_file):
-    """Cập nhật tên file cho CV"""
+def update_cv_db(ma_cv, ten_cv, ten_file, hoc_van, kinh_nghiem_lam_viec):
+    """Cập nhật toàn bộ thông tin CV theo ERD"""
     conn = get_db_connection()
     if conn is None:
         raise Exception("Lỗi kết nối cơ sở dữ liệu!")
     try:
         cursor = conn.cursor(dictionary=True)
-        update_query = "UPDATE cv SET TenFile = %s WHERE MaCV = %s"
-        cursor.execute(update_query, (ten_file, ma_cv))
+        # Cập nhật tất cả các trường
+        update_query = """
+            UPDATE cv 
+            SET ten_cv = %s, ten_file = %s, hoc_van = %s, kinh_nghiem_lam_viec = %s 
+            WHERE ma_cv = %s
+        """
+        cursor.execute(update_query, (ten_cv, ten_file, hoc_van, kinh_nghiem_lam_viec, ma_cv))
         conn.commit()
         return True
     finally:
@@ -83,15 +92,18 @@ def delete_cv_db(ma_cv):
         if conn and conn.is_connected():
             conn.close()
 
-def create_job_db(tieu_de, mo_ta, ma_nha_tuyen_dung):
-    """Tạo tin tuyển dụng mới, trả về ID của tin vừa tạo"""
+def create_job_db(tieu_de, mo_ta, trang_thai, han_nop, luong, quyen_loi, ma_nha_tuyen_dung):
+    """Tạo tin tuyển dụng mới với đầy đủ các trường theo ERD"""
     conn = get_db_connection()
     if conn is None:
         raise Exception("Lỗi kết nối cơ sở dữ liệu!")
     try:
         cursor = conn.cursor(dictionary=True)
-        insert_query = "INSERT INTO tintuyendung (TieuDe, MoTa, MaNhaTuyenDung) VALUES (%s, %s, %s)"
-        cursor.execute(insert_query, (tieu_de, mo_ta, ma_nha_tuyen_dung))
+        insert_query = """
+            INSERT INTO tin_tuyen_dung (tieu_de, mo_ta, trang_thai, han_nop, luong, quyen_loi, ma_nha_tuyen_dung) 
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """
+        cursor.execute(insert_query, (tieu_de, mo_ta, trang_thai, han_nop, luong, quyen_loi, ma_nha_tuyen_dung))
         conn.commit()
         return cursor.lastrowid
     finally:
@@ -107,7 +119,7 @@ def get_job_by_id(tin_id):
         raise Exception("Lỗi kết nối cơ sở dữ liệu!")
     try:
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT TinId, TieuDe, MoTa, MaNhaTuyenDung FROM tintuyendung WHERE TinId = %s", (tin_id,))
+        cursor.execute("SELECT * FROM tin_tuyen_dung WHERE tin_id = %s", (tin_id,))
         return cursor.fetchone()
     finally:
         if 'cursor' in locals() and cursor:
@@ -122,7 +134,7 @@ def get_all_jobs_db():
         raise Exception("Lỗi kết nối cơ sở dữ liệu!")
     try:
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT TinId, TieuDe, MoTa, MaNhaTuyenDung FROM tintuyendung")
+        cursor.execute("SELECT * FROM tin_tuyen_dung")
         return cursor.fetchall()
     finally:
         if 'cursor' in locals() and cursor:
@@ -130,11 +142,8 @@ def get_all_jobs_db():
         if conn and conn.is_connected():
             conn.close()
 
-def update_job_db(tin_id, tieu_de=None, mo_ta=None):
-    """Cập nhật tin tuyển dụng động (truyền gì update nấy)"""
-    if tieu_de is None and mo_ta is None:
-        return False
-        
+def update_job_db(tin_id, tieu_de=None, mo_ta=None, trang_thai=None, han_nop=None, luong=None, quyen_loi=None):
+    """Cập nhật tin tuyển dụng động cho tất cả các trường có trong ERD"""
     conn = get_db_connection()
     if conn is None:
         raise Exception("Lỗi kết nối cơ sở dữ liệu!")
@@ -143,15 +152,25 @@ def update_job_db(tin_id, tieu_de=None, mo_ta=None):
         fields = []
         values = []
         
-        if tieu_de is not None:
-            fields.append('TieuDe = %s')
-            values.append(tieu_de)
-        if mo_ta is not None:
-            fields.append('MoTa = %s')
-            values.append(mo_ta)
+        mapping = {
+            'tieu_de': tieu_de,
+            'mo_ta': mo_ta,
+            'trang_thai': trang_thai,
+            'han_nop': han_nop,
+            'luong': luong,
+            'quyen_loi': quyen_loi
+        }
+
+        for column, val in mapping.items():
+            if val is not None:
+                fields.append(f"{column} = %s")
+                values.append(val)
+
+        if not fields:
+            return False
 
         values.append(tin_id)
-        update_query = f"UPDATE tintuyendung SET {', '.join(fields)} WHERE TinId = %s"
+        update_query = f"UPDATE tin_tuyen_dung SET {', '.join(fields)} WHERE tin_id = %s"
         cursor.execute(update_query, tuple(values))
         conn.commit()
         return True
@@ -162,13 +181,13 @@ def update_job_db(tin_id, tieu_de=None, mo_ta=None):
             conn.close()
 
 def delete_job_db(tin_id):
-    """Xóa tin tuyển dụng, trả về True nếu xóa thành công, False nếu không tìm thấy"""
+    """Xóa tin tuyển dụng"""
     conn = get_db_connection()
     if conn is None:
         raise Exception("Lỗi kết nối cơ sở dữ liệu!")
     try:
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM tintuyendung WHERE TinId = %s", (tin_id,))
+        cursor.execute("DELETE FROM tin_tuyen_dung WHERE tin_id = %s", (tin_id,))
         conn.commit()
         return cursor.rowcount > 0 
     finally:

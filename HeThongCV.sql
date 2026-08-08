@@ -16,27 +16,56 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `congty`
+-- Table structure for table `alembic_version`
 --
 
-DROP TABLE IF EXISTS `congty`;
+DROP TABLE IF EXISTS `alembic_version`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `congty` (
-  `MaCongTy` int NOT NULL AUTO_INCREMENT,
-  `TenCongTy` varchar(255) NOT NULL,
-  `MoTa` text,
-  PRIMARY KEY (`MaCongTy`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `alembic_version` (
+  `version_num` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL,
+  PRIMARY KEY (`version_num`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `congty`
+-- Dumping data for table `alembic_version`
 --
 
-LOCK TABLES `congty` WRITE;
-/*!40000 ALTER TABLE `congty` DISABLE KEYS */;
-/*!40000 ALTER TABLE `congty` ENABLE KEYS */;
+LOCK TABLES `alembic_version` WRITE;
+/*!40000 ALTER TABLE `alembic_version` DISABLE KEYS */;
+INSERT INTO `alembic_version` VALUES ('xxxx');
+/*!40000 ALTER TABLE `alembic_version` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `cong_ty`
+--
+
+DROP TABLE IF EXISTS `cong_ty`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `cong_ty` (
+  `ma_cong_ty` int NOT NULL AUTO_INCREMENT,
+  `ten_cong_ty` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ma_so_thue` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `mo_ta` text COLLATE utf8mb4_unicode_ci,
+  `dia_chi` text COLLATE utf8mb4_unicode_ci,
+  `ma_nha_tuyen_dung` int NOT NULL,
+  PRIMARY KEY (`ma_cong_ty`),
+  UNIQUE KEY `ma_nha_tuyen_dung` (`ma_nha_tuyen_dung`),
+  UNIQUE KEY `ma_so_thue` (`ma_so_thue`),
+  CONSTRAINT `cong_ty_ibfk_1` FOREIGN KEY (`ma_nha_tuyen_dung`) REFERENCES `nha_tuyen_dung` (`ma_nha_tuyen_dung`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `cong_ty`
+--
+
+LOCK TABLES `cong_ty` WRITE;
+/*!40000 ALTER TABLE `cong_ty` DISABLE KEYS */;
+/*!40000 ALTER TABLE `cong_ty` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -47,13 +76,16 @@ DROP TABLE IF EXISTS `cv`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cv` (
-  `MaCV` int NOT NULL AUTO_INCREMENT,
-  `TenFile` varchar(255) NOT NULL,
-  `MaUngVien` int NOT NULL,
-  PRIMARY KEY (`MaCV`),
-  KEY `MaUngVien` (`MaUngVien`),
-  CONSTRAINT `cv_ibfk_1` FOREIGN KEY (`MaUngVien`) REFERENCES `ungvien` (`Id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `ma_cv` int NOT NULL AUTO_INCREMENT,
+  `ten_cv` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ten_file` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `hoc_van` text COLLATE utf8mb4_unicode_ci,
+  `kinh_nghiem_lam_viec` text COLLATE utf8mb4_unicode_ci,
+  `ma_ung_vien` int NOT NULL,
+  PRIMARY KEY (`ma_cv`),
+  KEY `ma_ung_vien` (`ma_ung_vien`),
+  CONSTRAINT `cv_ibfk_1` FOREIGN KEY (`ma_ung_vien`) REFERENCES `ung_vien` (`ma_ung_vien`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -66,168 +98,245 @@ LOCK TABLES `cv` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `hosoungtuyen`
+-- Table structure for table `cv_ky_nang`
 --
 
-DROP TABLE IF EXISTS `hosoungtuyen`;
+DROP TABLE IF EXISTS `cv_ky_nang`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `hosoungtuyen` (
-  `MaHoSo` int NOT NULL AUTO_INCREMENT,
-  `MaUngVien` int NOT NULL,
-  `TinId` int NOT NULL,
-  `MaCV` int NOT NULL,
-  `TrangThai` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
-  `NgayNop` date NOT NULL,
-  PRIMARY KEY (`MaHoSo`),
-  KEY `MaUngVien` (`MaUngVien`),
-  KEY `TinId` (`TinId`),
-  KEY `MaCV` (`MaCV`),
-  CONSTRAINT `hosoungtuyen_ibfk_1` FOREIGN KEY (`MaUngVien`) REFERENCES `ungvien` (`Id`),
-  CONSTRAINT `hosoungtuyen_ibfk_2` FOREIGN KEY (`TinId`) REFERENCES `tintuyendung` (`TinId`),
-  CONSTRAINT `hosoungtuyen_ibfk_3` FOREIGN KEY (`MaCV`) REFERENCES `cv` (`MaCV`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `cv_ky_nang` (
+  `ma_cv` int NOT NULL,
+  `ma_ky_nang` int NOT NULL,
+  PRIMARY KEY (`ma_cv`,`ma_ky_nang`),
+  KEY `ma_ky_nang` (`ma_ky_nang`),
+  CONSTRAINT `cv_ky_nang_ibfk_1` FOREIGN KEY (`ma_cv`) REFERENCES `cv` (`ma_cv`) ON DELETE CASCADE,
+  CONSTRAINT `cv_ky_nang_ibfk_2` FOREIGN KEY (`ma_ky_nang`) REFERENCES `ky_nang` (`ma_ky_nang`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `hosoungtuyen`
+-- Dumping data for table `cv_ky_nang`
 --
 
-LOCK TABLES `hosoungtuyen` WRITE;
-/*!40000 ALTER TABLE `hosoungtuyen` DISABLE KEYS */;
-/*!40000 ALTER TABLE `hosoungtuyen` ENABLE KEYS */;
+LOCK TABLES `cv_ky_nang` WRITE;
+/*!40000 ALTER TABLE `cv_ky_nang` DISABLE KEYS */;
+/*!40000 ALTER TABLE `cv_ky_nang` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
--- Table structure for table `nguoidung`
+-- Table structure for table `ho_so_ung_tuyen`
 --
 
-DROP TABLE IF EXISTS `nguoidung`;
+DROP TABLE IF EXISTS `ho_so_ung_tuyen`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `nguoidung` (
-  `Id` int NOT NULL AUTO_INCREMENT,
-  `Username` varchar(50) NOT NULL,
-  `Password` varchar(255) NOT NULL,
-  `VaiTro` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
-  PRIMARY KEY (`Id`),
-  UNIQUE KEY `Username` (`Username`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `ho_so_ung_tuyen` (
+  `ma_ho_so` int NOT NULL AUTO_INCREMENT,
+  `trang_thai` enum('Chờ duyệt','Đã duyệt','Từ chối') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ngay_nop` datetime DEFAULT NULL,
+  `ma_ung_vien` int NOT NULL,
+  `tin_id` int NOT NULL,
+  `ma_cv` int NOT NULL,
+  PRIMARY KEY (`ma_ho_so`),
+  KEY `ma_cv` (`ma_cv`),
+  KEY `tin_id` (`tin_id`),
+  KEY `ma_ung_vien` (`ma_ung_vien`),
+  CONSTRAINT `ho_so_ung_tuyen_ibfk_1` FOREIGN KEY (`ma_cv`) REFERENCES `cv` (`ma_cv`) ON DELETE CASCADE,
+  CONSTRAINT `ho_so_ung_tuyen_ibfk_2` FOREIGN KEY (`tin_id`) REFERENCES `tin_tuyen_dung` (`tin_id`) ON DELETE CASCADE,
+  CONSTRAINT `ho_so_ung_tuyen_ibfk_3` FOREIGN KEY (`ma_ung_vien`) REFERENCES `ung_vien` (`ma_ung_vien`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `nguoidung`
+-- Dumping data for table `ho_so_ung_tuyen`
 --
 
-LOCK TABLES `nguoidung` WRITE;
-/*!40000 ALTER TABLE `nguoidung` DISABLE KEYS */;
-/*!40000 ALTER TABLE `nguoidung` ENABLE KEYS */;
+LOCK TABLES `ho_so_ung_tuyen` WRITE;
+/*!40000 ALTER TABLE `ho_so_ung_tuyen` DISABLE KEYS */;
+/*!40000 ALTER TABLE `ho_so_ung_tuyen` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
--- Table structure for table `nhatuyendung`
+-- Table structure for table `ky_nang`
 --
 
-DROP TABLE IF EXISTS `nhatuyendung`;
+DROP TABLE IF EXISTS `ky_nang`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `nhatuyendung` (
-  `MaNhaTuyenDung` int NOT NULL,
-  `TenNguoiTuyenDung` varchar(255) NOT NULL,
-  `MaCongTy` int NOT NULL,
-  PRIMARY KEY (`MaNhaTuyenDung`),
-  KEY `MaCongTy` (`MaCongTy`),
-  CONSTRAINT `nhatuyendung_ibfk_1` FOREIGN KEY (`MaNhaTuyenDung`) REFERENCES `nguoidung` (`Id`),
-  CONSTRAINT `nhatuyendung_ibfk_2` FOREIGN KEY (`MaCongTy`) REFERENCES `congty` (`MaCongTy`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `ky_nang` (
+  `ma_ky_nang` int NOT NULL AUTO_INCREMENT,
+  `ten_ky_nang` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  PRIMARY KEY (`ma_ky_nang`),
+  UNIQUE KEY `ten_ky_nang` (`ten_ky_nang`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `nhatuyendung`
+-- Dumping data for table `ky_nang`
 --
 
-LOCK TABLES `nhatuyendung` WRITE;
-/*!40000 ALTER TABLE `nhatuyendung` DISABLE KEYS */;
-/*!40000 ALTER TABLE `nhatuyendung` ENABLE KEYS */;
+LOCK TABLES `ky_nang` WRITE;
+/*!40000 ALTER TABLE `ky_nang` DISABLE KEYS */;
+/*!40000 ALTER TABLE `ky_nang` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
--- Table structure for table `quantri`
+-- Table structure for table `nguoi_dung`
 --
 
-DROP TABLE IF EXISTS `quantri`;
+DROP TABLE IF EXISTS `nguoi_dung`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `quantri` (
-  `Id` int NOT NULL,
-  `TenQuanTri` varchar(255) NOT NULL,
-  PRIMARY KEY (`Id`),
-  CONSTRAINT `quantri_ibfk_1` FOREIGN KEY (`Id`) REFERENCES `nguoidung` (`Id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `nguoi_dung` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `username` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `vai_tro` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ho_ten` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ngay_sinh` date DEFAULT NULL,
+  `email` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `gioi_tinh` enum('Nam','Nữ','Khác') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `so_dien_thoai` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `dia_chi` text COLLATE utf8mb4_unicode_ci,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `email` (`email`),
+  UNIQUE KEY `username` (`username`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `quantri`
+-- Dumping data for table `nguoi_dung`
 --
 
-LOCK TABLES `quantri` WRITE;
-/*!40000 ALTER TABLE `quantri` DISABLE KEYS */;
-/*!40000 ALTER TABLE `quantri` ENABLE KEYS */;
+LOCK TABLES `nguoi_dung` WRITE;
+/*!40000 ALTER TABLE `nguoi_dung` DISABLE KEYS */;
+/*!40000 ALTER TABLE `nguoi_dung` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
--- Table structure for table `tintuyendung`
+-- Table structure for table `nha_tuyen_dung`
 --
 
-DROP TABLE IF EXISTS `tintuyendung`;
+DROP TABLE IF EXISTS `nha_tuyen_dung`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `tintuyendung` (
-  `TinId` int NOT NULL AUTO_INCREMENT,
-  `TieuDe` varchar(255) NOT NULL,
-  `MoTa` text,
-  `MaNhaTuyenDung` int NOT NULL,
-  PRIMARY KEY (`TinId`),
-  KEY `MaNhaTuyenDung` (`MaNhaTuyenDung`),
-  CONSTRAINT `tintuyendung_ibfk_1` FOREIGN KEY (`MaNhaTuyenDung`) REFERENCES `nhatuyendung` (`MaNhaTuyenDung`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `nha_tuyen_dung` (
+  `ma_nha_tuyen_dung` int NOT NULL,
+  PRIMARY KEY (`ma_nha_tuyen_dung`),
+  CONSTRAINT `nha_tuyen_dung_ibfk_1` FOREIGN KEY (`ma_nha_tuyen_dung`) REFERENCES `nguoi_dung` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `tintuyendung`
+-- Dumping data for table `nha_tuyen_dung`
 --
 
-LOCK TABLES `tintuyendung` WRITE;
-/*!40000 ALTER TABLE `tintuyendung` DISABLE KEYS */;
-/*!40000 ALTER TABLE `tintuyendung` ENABLE KEYS */;
+LOCK TABLES `nha_tuyen_dung` WRITE;
+/*!40000 ALTER TABLE `nha_tuyen_dung` DISABLE KEYS */;
+/*!40000 ALTER TABLE `nha_tuyen_dung` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
--- Table structure for table `ungvien`
+-- Table structure for table `quan_tri`
 --
 
-DROP TABLE IF EXISTS `ungvien`;
+DROP TABLE IF EXISTS `quan_tri`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `ungvien` (
-  `Id` int NOT NULL,
-  `HoTen` varchar(255) NOT NULL,
-  `SoDienThoai` varchar(20) NOT NULL,
-  `NgaySinh` date NOT NULL,
-  `GioiTinh` varchar(10) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
-  `Email` varchar(100) NOT NULL,
-  PRIMARY KEY (`Id`),
-  CONSTRAINT `ungvien_ibfk_1` FOREIGN KEY (`Id`) REFERENCES `nguoidung` (`Id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `quan_tri` (
+  `ma_quan_tri` int NOT NULL,
+  PRIMARY KEY (`ma_quan_tri`),
+  CONSTRAINT `quan_tri_ibfk_1` FOREIGN KEY (`ma_quan_tri`) REFERENCES `nguoi_dung` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `ungvien`
+-- Dumping data for table `quan_tri`
 --
 
-LOCK TABLES `ungvien` WRITE;
-/*!40000 ALTER TABLE `ungvien` DISABLE KEYS */;
-/*!40000 ALTER TABLE `ungvien` ENABLE KEYS */;
+LOCK TABLES `quan_tri` WRITE;
+/*!40000 ALTER TABLE `quan_tri` DISABLE KEYS */;
+/*!40000 ALTER TABLE `quan_tri` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `tin_tuyen_dung`
+--
+
+DROP TABLE IF EXISTS `tin_tuyen_dung`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `tin_tuyen_dung` (
+  `tin_id` int NOT NULL AUTO_INCREMENT,
+  `tieu_de` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `mo_ta` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `trang_thai` enum('Đang mở','Đã đóng') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `han_nop` date NOT NULL,
+  `luong` int DEFAULT NULL,
+  `quyen_loi` text COLLATE utf8mb4_unicode_ci,
+  `ma_nha_tuyen_dung` int NOT NULL,
+  PRIMARY KEY (`tin_id`),
+  KEY `ma_nha_tuyen_dung` (`ma_nha_tuyen_dung`),
+  CONSTRAINT `tin_tuyen_dung_ibfk_1` FOREIGN KEY (`ma_nha_tuyen_dung`) REFERENCES `nha_tuyen_dung` (`ma_nha_tuyen_dung`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `tin_tuyen_dung`
+--
+
+LOCK TABLES `tin_tuyen_dung` WRITE;
+/*!40000 ALTER TABLE `tin_tuyen_dung` DISABLE KEYS */;
+/*!40000 ALTER TABLE `tin_tuyen_dung` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `tin_tuyen_dung_ky_nang`
+--
+
+DROP TABLE IF EXISTS `tin_tuyen_dung_ky_nang`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `tin_tuyen_dung_ky_nang` (
+  `tin_id` int NOT NULL,
+  `ma_ky_nang` int NOT NULL,
+  PRIMARY KEY (`tin_id`,`ma_ky_nang`),
+  KEY `ma_ky_nang` (`ma_ky_nang`),
+  CONSTRAINT `tin_tuyen_dung_ky_nang_ibfk_1` FOREIGN KEY (`ma_ky_nang`) REFERENCES `ky_nang` (`ma_ky_nang`) ON DELETE CASCADE,
+  CONSTRAINT `tin_tuyen_dung_ky_nang_ibfk_2` FOREIGN KEY (`tin_id`) REFERENCES `tin_tuyen_dung` (`tin_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `tin_tuyen_dung_ky_nang`
+--
+
+LOCK TABLES `tin_tuyen_dung_ky_nang` WRITE;
+/*!40000 ALTER TABLE `tin_tuyen_dung_ky_nang` DISABLE KEYS */;
+/*!40000 ALTER TABLE `tin_tuyen_dung_ky_nang` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `ung_vien`
+--
+
+DROP TABLE IF EXISTS `ung_vien`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `ung_vien` (
+  `ma_ung_vien` int NOT NULL,
+  PRIMARY KEY (`ma_ung_vien`),
+  CONSTRAINT `ung_vien_ibfk_1` FOREIGN KEY (`ma_ung_vien`) REFERENCES `nguoi_dung` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `ung_vien`
+--
+
+LOCK TABLES `ung_vien` WRITE;
+/*!40000 ALTER TABLE `ung_vien` DISABLE KEYS */;
+/*!40000 ALTER TABLE `ung_vien` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -239,4 +348,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-07-19 13:52:03
+-- Dump completed on 2026-08-08 18:22:32

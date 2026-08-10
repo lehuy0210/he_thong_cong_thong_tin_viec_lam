@@ -223,3 +223,38 @@ def get_nha_tuyen_dung_by_id(ma_nha_tuyen_dung):
             cursor.close()
         if conn and conn.is_connected():
             conn.close()
+            
+def filter_jobs(
+    keyword=None,
+    luong_min=None,
+    luong_max=None,
+):
+    """Tìm kiếm và lọc tin tuyển dụng theo từ khóa và mức lương."""
+    conn = get_db_connection()
+    if conn is None:
+        raise Exception("Lỗi kết nối cơ sở dữ liệu!")
+    try:
+        cursor = conn.cursor(dictionary=True)
+        query = "SELECT * FROM tin_tuyen_dung WHERE 1=1"
+        params = []
+
+        if keyword:
+            query += " AND (tieu_de LIKE %s OR mo_ta LIKE %s)"
+            params.append(f"%{keyword}%")
+            params.append(f"%{keyword}%")
+
+        if luong_min is not None:
+            query += " AND luong >= %s"
+            params.append(luong_min)
+
+        if luong_max is not None:
+            query += " AND luong <= %s"
+            params.append(luong_max)
+
+        cursor.execute(query, tuple(params))
+        return cursor.fetchall()
+    finally:
+        if 'cursor' in locals() and cursor:
+            cursor.close()
+        if conn and conn.is_connected():
+            conn.close()

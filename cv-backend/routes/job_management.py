@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from dao import create_job_db, get_job_by_id, get_all_jobs_db, update_job_db, delete_job_db, get_nha_tuyen_dung_by_id
+from dao import create_job_db, get_job_by_id, get_all_jobs_db, update_job_db, delete_job_db, get_nha_tuyen_dung_by_id, filter_jobs
 
 job_bp = Blueprint('job', __name__)
 
@@ -85,7 +85,27 @@ def delete_job(tin_id):
 @job_bp.route('/jobs', methods=['GET'])
 def get_jobs():
     try:
-        jobs = get_all_jobs_db()
+        keyword = request.args.get('keyword')
+        luong_min = request.args.get('luong_min')
+        luong_max = request.args.get('luong_max')
+        
+        if luong_min is not None:
+            try:
+                luong_min = int(luong_min)
+            except ValueError:
+                luong_min = None
+                
+        if luong_max is not None:
+            try:
+                luong_max = int(luong_max)
+            except ValueError:
+                luong_max = None
+                
+        if keyword or luong_min is not None or luong_max is not None:
+            jobs = filter_jobs(keyword=keyword, luong_min=luong_min, luong_max=luong_max)
+        else:
+            jobs = get_all_jobs_db()
+            
         return jsonify({'jobs': jobs}), 200
     except Exception as e:
         return jsonify({'message': f'Lỗi hệ thống: {str(e)}'}), 500

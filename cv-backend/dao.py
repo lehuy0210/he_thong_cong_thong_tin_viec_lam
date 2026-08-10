@@ -229,26 +229,31 @@ def filter_jobs(
     luong_min=None,
     luong_max=None,
 ):
-    """Tìm kiếm và lọc tin tuyển dụng theo từ khóa và mức lương."""
+    """Tìm kiếm và lọc tin tuyển dụng theo từ khóa và mức lương (chỉ lấy các tin có trạng thái 'Đang mở')."""
     conn = get_db_connection()
     if conn is None:
         raise Exception("Lỗi kết nối cơ sở dữ liệu!")
     try:
         cursor = conn.cursor(dictionary=True)
-        query = "SELECT * FROM tin_tuyen_dung WHERE 1=1"
-        params = []
+        query = """
+            SELECT t.* 
+            FROM tin_tuyen_dung t
+            JOIN trang_thai ts ON t.ma_trang_thai = ts.ma_trang_thai
+            WHERE ts.ten_trang_thai = %s
+        """
+        params = ["Đang mở"]
 
         if keyword:
-            query += " AND (tieu_de LIKE %s OR mo_ta LIKE %s)"
+            query += " AND (t.tieu_de LIKE %s OR t.mo_ta LIKE %s)"
             params.append(f"%{keyword}%")
             params.append(f"%{keyword}%")
 
         if luong_min is not None:
-            query += " AND luong >= %s"
+            query += " AND t.luong >= %s"
             params.append(luong_min)
 
         if luong_max is not None:
-            query += " AND luong <= %s"
+            query += " AND t.luong <= %s"
             params.append(luong_max)
 
         cursor.execute(query, tuple(params))

@@ -263,3 +263,70 @@ def filter_jobs(
             cursor.close()
         if conn and conn.is_connected():
             conn.close()
+
+
+def filter_cvs(tin_id=None, ds_ma_ky_nang=None, tu_khoa_hoc_van=None):
+    """Lọc danh sách CV dựa trên tin_id, danh sách mã kỹ năng, và học vấn."""
+    conn = get_db_connection()
+    if conn is None:
+        raise Exception("Lỗi kết nối cơ sở dữ liệu!")
+    try:
+        cursor = conn.cursor(dictionary=True)
+        
+        # Xây dựng câu truy vấn động
+        query = """
+            SELECT 
+                c.ma_cv, 
+                c.ten_cv, 
+                c.ten_file, 
+                c.hoc_van, 
+                c.kinh_nghiem_lam_viec, 
+                c.ma_ung_vien,
+                uv.ho_ten,
+                uv.email,
+                COUNT(ckn.ma_ky_nang) AS so_ky_nang_trung_khop
+            FROM cv c
+            JOIN ung_vien uv ON c.ma_ung_vien = uv.ma_ung_vien
+        """
+        
+        params = []
+        joins = ""
+        where_conds = []
+        
+        # 1. Nếu lọc theo tin_id (lọc từ các hồ sơ ứng tuyển của tin đó)
+        if tin_id is not None:
+            joins += " JOIN ho_so_ung_tuyen h ON c.ma_cv = h.ma_cv "
+            where_conds.append("h.tin_id = %s")
+            params.append(tin_id)
+            
+        # 2. Nếu có lọc theo danh sách kỹ năng
+        if ds_ma_ky_nang:
+            joins += " LEFT JOIN cv_ky_nang ckn ON c.ma_cv = ckn.ma_cv "
+            placeholders = ", ".join(["%s"] * len(ds_ma_ky_nang))
+            where_conds.append(f"ckn.ma_ky_nang IN ({placeholders})")
+            params.extend(ds_ma_ky_nang)
+        else:
+            # Nếu không lọc kỹ năng, vẫn JOIN để đếm kỹ năng trùng khớp (trả về 0)
+            joins += " LEFT JOIN cv_ky_nang ckn ON c.ma_cv = ckn.ma_cv "
+            
+        # 3. Lọc theo từ khóa học vấn
+        if tu_khoa_hoc_van:
+            where_conds.append("c.hoc_van LIKE %s")
+            params.append(f"%{tu_khoa_hoc_van}%")
+            
+        query += joins
+        if where_conds:
+            query += " WHERE " + " AND ".join(where_conds)
+            
+        query += " GROUP BY c.ma_cv "
+        
+        # Sắp xếp theo số lượng kỹ năng khớp từ cao xuống thấp
+        query += " ORDER BY so_ky_nang_trung_khop DESC"
+        
+        cursor.execute(query, tuple(params))
+        return cursor.fetchall()
+    finally:
+        if 'cursor' in locals() and cursor:
+            cursor.close()
+        if conn and conn.is_connected():
+            conn.close()

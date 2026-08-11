@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from dao import get_ung_vien_by_id, get_cv_by_id, create_cv_db, update_cv_db, delete_cv_db
+from dao import get_ung_vien_by_id, get_cv_by_id, create_cv_db, update_cv_db, delete_cv_db, filter_cvs
 
 cv_bp = Blueprint('cv', __name__)
 
@@ -91,5 +91,25 @@ def delete_cv(ma_cv):
             'ma_cv': ma_cv
         }), 200
 
+    except Exception as e:
+        return jsonify({'message': f'Lỗi hệ thống: {str(e)}'}), 500
+
+
+@cv_bp.route('/cvs/filter', methods=['GET'])
+def get_filtered_cvs():
+    tin_id = request.args.get('tin_id', type=int)
+    hoc_van = request.args.get('hoc_van')
+    skills_raw = request.args.get('skills') # "1,2,3"
+    
+    ds_ma_ky_nang = []
+    if skills_raw:
+        try:
+            ds_ma_ky_nang = [int(x.strip()) for x in skills_raw.split(',') if x.strip()]
+        except ValueError:
+            return jsonify({'message': 'Danh sách mã kỹ năng không hợp lệ'}), 400
+
+    try:
+        cvs = filter_cvs(tin_id=tin_id, ds_ma_ky_nang=ds_ma_ky_nang, tu_khoa_hoc_van=hoc_van)
+        return jsonify({'cvs': cvs}), 200
     except Exception as e:
         return jsonify({'message': f'Lỗi hệ thống: {str(e)}'}), 500

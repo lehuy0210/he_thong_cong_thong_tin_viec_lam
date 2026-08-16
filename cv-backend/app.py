@@ -5,6 +5,7 @@ from flask_migrate import Migrate
 import db
 from routes.job_management import job_bp
 from routes.cv import cv_bp
+from routes.job_apply import job_apply_bp
 from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
@@ -15,11 +16,12 @@ migrate = Migrate(app, db)
 import models
 
 
-CORS(app)  # Cho phép tất cả các domain (bao gồm React localhost) gọi API
+CORS(app)
 
 app.register_blueprint(auth_bp, url_prefix='/api')
 app.register_blueprint(job_bp, url_prefix='/api')
 app.register_blueprint(cv_bp, url_prefix='/api')
+app.register_blueprint(job_apply_bp, url_prefix='/api')
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

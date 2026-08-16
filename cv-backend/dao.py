@@ -223,3 +223,51 @@ def get_nha_tuyen_dung_by_id(ma_nha_tuyen_dung):
             cursor.close()
         if conn and conn.is_connected():
             conn.close()
+
+def luu_ho_so_ung_tuyen(ma_ung_vien, tin_id, ma_cv):
+    """Lưu hồ sơ ứng tuyển bằng Raw SQL"""
+    conn = get_db_connection()
+    if conn is None:
+        raise Exception("Lỗi kết nối cơ sở dữ liệu!")
+    try:
+        cursor = conn.cursor(dictionary=True)
+        
+        cursor.execute("SELECT ma_trang_thai FROM trang_thai WHERE ten_trang_thai = 'Chờ duyệt'")
+        trang_thai = cursor.fetchone()
+        ma_trang_thai = trang_thai['ma_trang_thai'] if trang_thai else 1
+        
+        # 2. Insert hồ sơ ứng tuyển mới
+        insert_query = """
+            INSERT INTO ho_so_ung_tuyen (ma_ung_vien, tin_id, ma_cv, ma_trang_thai, ngay_nop) 
+            VALUES (%s, %s, %s, %s, %s)
+        """
+        ngay_nop = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S') 
+        
+        cursor.execute(insert_query, (ma_ung_vien, tin_id, ma_cv, ma_trang_thai, ngay_nop))
+        conn.commit()
+        return True
+    except Exception as e:
+        print(f"Lỗi lưu hồ sơ: {e}")
+        return False
+    finally:
+        if 'cursor' in locals() and cursor:
+            cursor.close()
+        if conn and conn.is_connected():
+            conn.close()
+
+
+def lay_cv_cua_ung_vien(ma_cv, ma_ung_vien):
+    """Lấy thông tin CV để kiểm tra định dạng file bằng Raw SQL"""
+    conn = get_db_connection()
+    if conn is None:
+        raise Exception("Lỗi kết nối cơ sở dữ liệu!")
+    try:
+        cursor = conn.cursor(dictionary=True)
+        query = "SELECT * FROM cv WHERE ma_cv = %s AND ma_ung_vien = %s"
+        cursor.execute(query, (ma_cv, ma_ung_vien))
+        return cursor.fetchone()
+    finally:
+        if 'cursor' in locals() and cursor:
+            cursor.close()
+        if conn and conn.is_connected():
+            conn.close()

@@ -13,3 +13,9 @@ export const authApi = {
     register: (data) => apiClient.post('/register', data),
     login: (data) => apiClient.post('/login', data),
 };
+
+export const jobApi = {
+    getAllJobs: () => axiosClient.get('/jobs'),
+
+    getJobById: (tin_id) => axiosClient.get(`/jobs/${tin_id}`)
+};

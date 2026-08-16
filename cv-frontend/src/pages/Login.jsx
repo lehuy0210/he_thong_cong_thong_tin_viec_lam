@@ -38,7 +38,17 @@ export default function Login() {
 
             const res = await authApi.login(form);
 
-            setResult({ ok: true, message: res.data.message });
+            console.log("Kết quả từ Backend:", res.data);
+
+            setResult({ ok: true, message: res.data.message || 'Đăng nhập thành công' });
+
+            if (res.data.user) {
+                localStorage.setItem('user', JSON.stringify(res.data.user));
+            } else {
+                console.warn("Không tìm thấy thông tin user từ Backend!");
+            }
+
+            window.location.href = '/home';
 
         } catch (err) {
             const msg = err.response?.data?.message || 'Lỗi kết nối đến máy chủ.';
@@ -52,7 +62,6 @@ export default function Login() {
         <div className="auth-container">
             <h2>Đăng Nhập</h2>
             <form onSubmit={handleSubmit}>
-
                 <div className="form-group">
                     <label>Tên đăng nhập</label>
                     <input

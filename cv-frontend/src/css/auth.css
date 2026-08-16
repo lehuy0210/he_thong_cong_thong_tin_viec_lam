@@ -12,7 +12,7 @@ body {
   background-color: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01); /* Bóng đổ xịn xò như các trang công nghệ */
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
 }
 
 .auth-container h2 {
@@ -53,8 +53,8 @@ body {
 .form-group select:focus {
   outline: none;
   background-color: #ffffff;
-  border-color: #2563eb; 
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+  border-color: #00b14f; 
+  box-shadow: 0 0 0 4px rgba(0, 177, 79, 0.1); 
 }
 
 button[type="submit"] {
@@ -64,7 +64,7 @@ button[type="submit"] {
   font-size: 16px;
   font-weight: 600;
   color: #ffffff;
-  background-color: #2563eb;
+  background-color: #00b14f; 
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -72,7 +72,7 @@ button[type="submit"] {
 }
 
 button[type="submit"]:hover:not(:disabled) {
-  background-color: #1d4ed8;
+  background-color: #009944; 
   transform: translateY(-1px); 
 }
 
@@ -81,7 +81,7 @@ button[type="submit"]:active:not(:disabled) {
 }
 
 button[type="submit"]:disabled {
-  background-color: #93c5fd;
+  background-color: #80d8a7;
   cursor: not-allowed;
 }
 

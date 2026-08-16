@@ -1,8 +1,6 @@
 import os
 import mysql.connector
 from mysql.connector import Error
-
-# Khai báo db_config gom chung
 db_config = {
     'host': os.getenv('DB_HOST', 'localhost'),
     'user': os.getenv('DB_USER', 'root'),          
